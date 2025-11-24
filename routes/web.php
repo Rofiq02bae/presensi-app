@@ -24,4 +24,20 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth','role:admin'])->group(function(){
+   Route::get('/izin/create', [LeaveRequestController::class, 'create'])->name('izin.create');
+   Route::post('/izin/store', [LeaveRequestController::class, 'store'])->name('izin.store');
+   
+   Route::middleware('role:admin')->group(function(){
+      Route::get('/izin/approval', [LeaveRequestController::class, 'approvalList'])->name('izin.approval');
+   });
+});
+
+Route::middleware(['auth','role:pegawai'])->group(function(){
+   Route::get('/izin/create', [LeaveRequestController::class, 'create'])->name('izin.create');
+   Route::post('/izin/store', [LeaveRequestController::class, 'store'])->name('izin.store');
+});
+
 require __DIR__.'/auth.php';
+
+
