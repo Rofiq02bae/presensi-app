@@ -7,8 +7,7 @@ export default function Sidebar() {
 
     const links = [
         { name: "Dashboard", href: "/dashboard", roles: ["admin", "pegawai"] },
-        { name: "Data Pegawai", href: "/pegawai", roles: ["admin"] },
-        { name: "Presensi", href: "/presensi", roles: ["admin", "pegawai"] },
+        { name: "Presensi", href: user.role === 'admin' ? "/presensi/admin" : "/presensi/pegawai", roles: ["admin", "pegawai"] },
         { name: "Pengajuan Izin", href: "/izin/create", roles: ["pegawai"] },
         { name: "Approval Izin", href: "/izin/approval", roles: ["admin"] },
     ];

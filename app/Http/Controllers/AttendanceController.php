@@ -23,9 +23,96 @@ class AttendanceController extends Controller
         ]);
     }
 
+    public function presensiPegawai(Request $request)
+    {
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
+        
+        // Dapatkan employee dari user yang login menggunakan id yang sama
+        $employee = Employee::find(auth()->id());
+        
+        if (!$employee) {
+            abort(404, 'Data pegawai tidak ditemukan. Pastikan Anda sudah terdaftar sebagai pegawai.');
+        }
+        
+        $data = $this->getReportDataForEmployee($employee->id, $month, $year);
+        
+        return \Inertia\Inertia::render('Dashboard/PresensiPegawai', [
+            'days' => $data['days'],
+            'rows' => $data['rows'],
+            'currentMonth' => (int)$month,
+            'currentYear' => (int)$year,
+            'employee' => $employee,
+        ]);
+    }
+    
+    public function presensiAdmin(Request $request)
+    {
+        $month = $request->input('month', now()->month);
+        $year = $request->input('year', now()->year);
+        $employeeId = $request->input('employee_id');
+        
+        $employees = Employee::orderBy('nama')->get();
+        
+        if ($employeeId) {
+            $data = $this->getReportDataForEmployee($employeeId, $month, $year);
+        } else {
+            $data = $this->getReportData($month, $year);
+        }
+        
+        return \Inertia\Inertia::render('Dashboard/PresensiAdmin', [
+            'days' => $data['days'],
+            'rows' => $data['rows'],
+            'currentMonth' => (int)$month,
+            'currentYear' => (int)$year,
+            'employees' => $employees,
+            'selectedEmployeeId' => $employeeId ? (int)$employeeId : null,
+        ]);
+    }
+
     public function monthlyReport($month, $year)
     {
         return response()->json($this->getReportData($month, $year));
+    }
+    
+    private function getReportDataForEmployee($employeeId, $month, $year)
+    {
+        $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
+        $days = range(1, $daysInMonth);
+
+        $employee = Employee::with(['attendances' => function ($query) use ($month, $year) {
+            $query->whereMonth('date', $month)
+                  ->whereYear('date', $year);
+        }])->findOrFail($employeeId);
+
+        $attendanceMap = $employee->attendances->keyBy(function ($attendance) {
+            return (int) Carbon::parse($attendance->date)->format('d');
+        });
+
+        $row = [
+            'no' => 1,
+            'name' => $employee->nama,
+            'nip' => $employee->nip,
+        ];
+
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $key = 'd' . $day;
+            if (isset($attendanceMap[$day])) {
+                $att = $attendanceMap[$day];
+                if ($att->status === 'hadir') {
+                    $row[$key] = $att->time_in ? Carbon::parse($att->time_in)->format('H:i') : 'Hadir';
+                } else {
+                    $row[$key] = $att->status;
+                }
+            } else {
+                $row[$key] = null;
+            }
+        }
+
+        return [
+            'days' => $days,
+            'rows' => [$row],
+        ];
     }
 
     private function getReportData($month, $year)
