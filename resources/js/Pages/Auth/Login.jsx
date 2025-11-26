@@ -33,7 +33,7 @@ export default function Login({ status }) {
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="nip" value="NIP" />
+                    <InputLabel htmlFor="nip" value="NIP / Email" />
 
                     <TextInput
                         id="nip"
@@ -44,7 +44,7 @@ export default function Login({ status }) {
                         autoComplete="username"
                         isFocused={true}
                         onChange={(e) => setData('nip', e.target.value)}
-                        placeholder="Masukkan NIP"
+                        placeholder="Masukkan NIP atau Email"
                     />
 
                     <InputError message={errors.nip} className="mt-2" />

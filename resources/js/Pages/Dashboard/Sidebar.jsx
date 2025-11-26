@@ -18,6 +18,7 @@ export default function Sidebar() {
                 <h1 className="text-xl font-bold text-blue-600">PRESENSI APP</h1>
             </div>
 
+            
             <nav className="flex-1 p-4 space-y-2">
                 {links.map((link) => {
                     if (!link.roles.includes(user.role)) return null;

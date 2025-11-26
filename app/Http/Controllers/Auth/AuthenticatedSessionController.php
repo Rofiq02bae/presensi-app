@@ -31,6 +31,13 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        
+        // Debug: Log authentication state
+        \Log::info('After login', [
+            'auth_check' => Auth::check(),
+            'user_id' => Auth::id(),
+            'session_id' => session()->getId(),
+        ]);
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

@@ -41,13 +41,32 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('nip', 'password'), $this->boolean('remember'))) {
+        $input = $this->input('nip');
+        $password = $this->input('password');
+        
+        $authenticated = false;
+        
+        // Cek apakah input adalah email (untuk admin)
+        if (filter_var($input, FILTER_VALIDATE_EMAIL)) {
+            // Login menggunakan email untuk admin
+            $authenticated = Auth::attempt(['email' => $input, 'password' => $password], $this->boolean('remember'));
+            \Log::info('Login attempt with email', ['email' => $input, 'success' => $authenticated]);
+        } else {
+            // Login menggunakan NIP untuk pegawai
+            $authenticated = Auth::attempt(['nip' => $input, 'password' => $password], $this->boolean('remember'));
+            \Log::info('Login attempt with NIP', ['nip' => $input, 'success' => $authenticated]);
+        }
+        
+        if (!$authenticated) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'nip' => 'NIP atau password salah.',
+                'nip' => 'NIP/Email atau password salah.',
             ]);
         }
+        
+        // Check if user is authenticated after attempt
+        \Log::info('After authentication', ['auth_check' => Auth::check(), 'user_id' => Auth::id()]);
 
         RateLimiter::clear($this->throttleKey());
     }
