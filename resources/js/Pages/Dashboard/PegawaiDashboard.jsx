@@ -80,7 +80,7 @@ export default function PegawaiDashboard({
 
                 {!hasCheckedInToday ? (
                     <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-800 mb-1">
                                     Presensi Hari Ini
@@ -92,7 +92,7 @@ export default function PegawaiDashboard({
                             <button
                                 onClick={handleCheckIn}
                                 disabled={isCheckingIn}
-                                className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 flex items-center gap-2 ${isCheckingIn
+                                className={`w-full md:w-auto justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 flex items-center gap-2 ${isCheckingIn
                                     ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-green-600 hover:bg-green-700 hover:shadow-lg'
                                     }`}
@@ -200,57 +200,6 @@ export default function PegawaiDashboard({
                 )}
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <div className="flex gap-2 items-center">
-                    <select
-                        value={month}
-                        onChange={(e) => setMonth(e.target.value)}
-                        className="border rounded px-3 py-2"
-                    >
-                        {Array.from({ length: 12 }, (_, i) => (
-                            <option key={i + 1} value={i + 1}>
-                                {new Date(0, i).toLocaleString("id-ID", { month: "long" })}
-                            </option>
-                        ))}
-                    </select>
-                    <select
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        className="border rounded px-3 py-2"
-                    >
-                        {Array.from({ length: 5 }, (_, i) => (
-                            <option key={i} value={new Date().getFullYear() - 2 + i}>
-                                {new Date().getFullYear() - 2 + i}
-                            </option>
-                        ))}
-                    </select>
-                    <button
-                        onClick={handleFilterChange}
-                        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                        Tampilkan
-                    </button>
-                </div>
-
-                <div className="flex gap-2">
-                    <a
-                        href={`/api/attendances/export/excel/pegawai/${month}/${year}`}
-                        target="_blank"
-                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2"
-                    >
-                        Excel
-                    </a>
-                    <a
-                        href={`/api/attendances/export/pdf/pegawai/${month}/${year}`}
-                        target="_blank"
-                        className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 flex items-center gap-2"
-                    >
-                        PDF
-                    </a>
-                </div>
-            </div>
-
-            <AttendanceTable rows={rows} days={days} />
         </DashboardLayout>
     );
 }
