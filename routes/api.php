@@ -22,6 +22,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::put('/leave-requests/{id}/reject', [LeaveRequestController::class, 'reject']); // Uses web auth currently
 });
 
-// Export
-// Route::get('/attendances/export/excel/{month}/{year}', [ExportController::class, 'exportExcel']);
-// Route::get('/attendances/export/pdf/{month}/{year}', [ExportController::class, 'exportPdf']);
+// Export (untuk admin)
+Route::get('/attendances/export/excel/{month}/{year}', [ExportController::class, 'exportExcel']);
+Route::get('/attendances/export/pdf/{month}/{year}', [ExportController::class, 'exportPdf']);

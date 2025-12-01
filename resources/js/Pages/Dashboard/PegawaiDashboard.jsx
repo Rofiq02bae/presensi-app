@@ -55,7 +55,8 @@ export default function PegawaiDashboard({ days = [], rows = [], currentMonth, c
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Dashboard Pegawai</h2>
                 <p className="text-gray-600">
-                    {employee?.nama} ({employee?.nip})
+                    {employee?.nama}
+                    {/* NIP disembunyikan untuk keamanan data */}
                 </p>
             </div>
 
