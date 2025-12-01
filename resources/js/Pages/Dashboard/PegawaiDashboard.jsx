@@ -1,59 +1,51 @@
-import React, { useState } from "react";
-import { Head, router } from "@inertiajs/react";
+import React, { useState, useEffect } from "react";
+import { Head, router, usePage } from "@inertiajs/react";
 import DashboardLayout from "../../Layouts/DashboardLayout";
 import AttendanceTable from "./AttendanceTable";
 import StatCard from "../../Components/StatCard";
 
-export default function PegawaiDashboard({
-    days = [],
-    rows = [],
-    currentMonth,
-    currentYear,
-    employee,
-    stats = {},
-    hasCheckedInToday = false,
-    todayAttendance = null
-}) {
+export default function PegawaiDashboard({ days = [], rows = [], currentMonth, currentYear, employee, stats = {}, todayAttendance = null, hasCheckedInToday = false }) {
     const [month, setMonth] = useState(currentMonth || new Date().getMonth() + 1);
     const [year, setYear] = useState(currentYear || new Date().getFullYear());
     const [isCheckingIn, setIsCheckingIn] = useState(false);
-    const [checkInMessage, setCheckInMessage] = useState('');
+    const [checkInMessage, setCheckInMessage] = useState("");
     const [showMessage, setShowMessage] = useState(false);
+
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash.message) {
+            setCheckInMessage(flash.message);
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 5000);
+        }
+    }, [flash]);
 
     const handleFilterChange = () => {
         window.location.href = `/dashboard?month=${month}&year=${year}`;
     };
 
     const handleCheckIn = () => {
-        setIsCheckingIn(true);
-        setCheckInMessage('');
-        setShowMessage(false);
-
-        router.post('/presensi/hadir', {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setCheckInMessage('Presensi berhasil dicatat.');
-                setShowMessage(true);
-                setTimeout(() => {
-                    router.reload();
-                }, 1500);
-            },
-            onError: (errors) => {
-                const errorMessage = errors.message || Object.values(errors)[0] || 'Terjadi kesalahan saat melakukan presensi';
-                setCheckInMessage(errorMessage);
-                setShowMessage(true);
-                setIsCheckingIn(false);
-            },
-            onFinish: () => {
-                // Don't set isCheckingIn to false here on success, let the reload handle it
-            },
-        });
+        if (confirm("Apakah Anda yakin ingin melakukan presensi hadir?")) {
+            setIsCheckingIn(true);
+            router.post('/presensi/hadir', {}, {
+                onSuccess: () => {
+                    setIsCheckingIn(false);
+                    // Message handled by useEffect dependent on flash
+                },
+                onError: (errors) => {
+                    setIsCheckingIn(false);
+                    setCheckInMessage(errors.message || "Terjadi kesalahan saat presensi.");
+                    setShowMessage(true);
+                    setTimeout(() => setShowMessage(false), 5000);
+                }
+            });
+        }
     };
 
     const formatTime = (timeString) => {
-        if (!timeString) return '';
-        const time = new Date(`2000-01-01 ${timeString}`);
-        return time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        if (!timeString) return "-";
+        return timeString.substring(0, 5); // "08:00:00" -> "08:00"
     };
 
     return (
@@ -80,7 +72,7 @@ export default function PegawaiDashboard({
 
                 {!hasCheckedInToday ? (
                     <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+                        <div className="flex items-center justify-between">
                             <div>
                                 <h3 className="text-lg font-semibold text-gray-800 mb-1">
                                     Presensi Hari Ini
@@ -92,7 +84,7 @@ export default function PegawaiDashboard({
                             <button
                                 onClick={handleCheckIn}
                                 disabled={isCheckingIn}
-                                className={`w-full md:w-auto justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 flex items-center gap-2 ${isCheckingIn
+                                className={`px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 flex items-center gap-2 ${isCheckingIn
                                     ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-green-600 hover:bg-green-700 hover:shadow-lg'
                                     }`}

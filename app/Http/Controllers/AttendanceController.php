@@ -99,6 +99,9 @@ class AttendanceController extends Controller
         // Hitung statistik pribadi
         $stats = $this->getEmployeeStats($employee->id, $month, $year);
 
+        $todayAttendance = \App\Models\Attendance::getTodayAttendance($employee->id);
+        $hasCheckedInToday = $todayAttendance !== null;
+
         return \Inertia\Inertia::render('Dashboard/PegawaiDashboard', [
             'days' => $data['days'],
             'rows' => $data['rows'],
@@ -106,6 +109,8 @@ class AttendanceController extends Controller
             'currentYear' => (int)$year,
             'employee' => $employee,
             'stats' => $stats,
+            'todayAttendance' => $todayAttendance,
+            'hasCheckedInToday' => $hasCheckedInToday,
         ]);
     }
     
@@ -259,45 +264,7 @@ class AttendanceController extends Controller
         ];
     }
 
-    private function getReportDataForEmployee($employeeId, $month, $year)
-    {
-        $daysInMonth = Carbon::createFromDate($year, $month)->daysInMonth;
-        $days = range(1, $daysInMonth);
 
-        $employee = Employee::with(['attendances' => function ($query) use ($month, $year) {
-            $query->whereMonth('date', $month)
-                ->whereYear('date', $year);
-        }])->findOrFail($employeeId);
-
-        $attendanceMap = $employee->attendances->keyBy(function ($attendance) {
-            return (int) Carbon::parse($attendance->date)->format('d');
-        });
-
-        $row = [
-            'no' => 1,
-            'name' => $employee->nama,
-            'nip' => $employee->nip,
-        ];
-
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $key = 'd' . $day;
-            if (isset($attendanceMap[$day])) {
-                $att = $attendanceMap[$day];
-                if ($att->status === 'hadir') {
-                    $row[$key] = $att->time_in ? Carbon::parse($att->time_in)->format('H:i') : 'Hadir';
-                } else {
-                    $row[$key] = $att->status;
-                }
-            } else {
-                $row[$key] = null;
-            }
-        }
-
-        return [
-            'days' => $days,
-            'rows' => [$row],
-        ];
-    }
 
     private function getReportData($month, $year)
     {

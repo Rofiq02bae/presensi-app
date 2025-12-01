@@ -32,6 +32,7 @@ Route::middleware(['auth','role:admin'])->group(function(){
 
 Route::middleware(['auth','role:pegawai'])->group(function(){
    Route::get('/presensi/pegawai', [AttendanceController::class, 'presensiPegawai'])->name('presensi.pegawai');
+   Route::post('/presensi/hadir', [AttendanceController::class, 'checkIn'])->name('presensi.checkin');
    Route::get('/izin/create', [LeaveRequestController::class, 'create'])->name('izin.create');
    Route::post('/izin/store', [LeaveRequestController::class, 'store'])->name('izin.store');
 });
